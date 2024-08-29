@@ -21,20 +21,17 @@ int main(int argc, char* argv[]) {
     int rd;
     int i = 0;
     int size = 20;
-    double val = 1.0;
-    double valz[size];
+    double valz = 1.0;
     int bytes = 0;
 
     rd = checkError(open("raw.dat", O_RDONLY), "Open for Read");
     fd = checkError(open("data.dat", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR), "Open for Write");
 
     for(i = 0; i < size; i++) {
-        bytes = checkError(read(rd, &val, sizeof(double)), "read");
-        printf("%lf\n", val);
-        valz[i] = val;
+        bytes = checkError(read(rd, &valz, sizeof(double)), "read");
+        printf("%lf\n", valz);
+        bytes = checkError(write(fd, &valz, sizeof(double)), "write");
     }
-
-    bytes = checkError(write(fd, &valz, sizeof(double)), "write");
 
     close(rd);
     close(fd);
