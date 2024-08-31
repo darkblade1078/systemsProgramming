@@ -18,17 +18,17 @@ int checkError(int val, const char* msg) {
     return val;
 }
 
-//((H << 8) | L) / 32768.0 * 16.0
+//data | L) / 32768.0 * 16.0
 double convertRawAccelerationData(int16_t value) {
     return value / 32768.0 * 16.0;
 }
 
-//((H << 8) | L) / 32768.0 * 2000.0
+//data | L) / 32768.0 * 2000.0
 double convertRawAngularData(int16_t value) {
     return value / 32768.0 * 2000.0;
 }
 
-//((H << 8) | L) / 32768.0 * 180.0
+//data / 32768.0 * 180.0
 double convertRawAngleData(int16_t value) {
     return value / 32768.0 * 180.0;
 }
@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
         */
         for(int i = HEADER_SIZE; i < PACKET_SIZE; i += 2) {
 
-            //(L | (H << 8))
-            rawData = valz[i] | (valz[i + 1] << 8);
+            //((H << 8) | L)
+            rawData = ((valz[i + 1] << 8) | valz[i]);
 
             /*
                 use a switch case to know which data is being read
