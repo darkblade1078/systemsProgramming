@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     int rd; //read file
     int bytes; //bytes whether we get a -1, 0, or a file descriptor
     uint8_t valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
-    int16_t  rawData; //where we store our raw data after shifting bits
+    int16_t rawData; //where we store our raw data after shifting bits
     double convertedData; //where we store our converted data after using the proper conversion function
 
     //the file where we're reading the raw acceleration data from
