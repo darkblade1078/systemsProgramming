@@ -43,10 +43,10 @@ int main(int argc, char* argv[]) {
     double convertedData; //where we store our converted data after using the proper conversion function
 
     //the file where we're reading the raw acceleration data from
-    rd = checkError(open("raw.dat", O_RDONLY), "Open for Read");
+    rd = checkError(open("raw.dat", O_RDONLY), "Failed to open read file");
 
     //the file we are sending the converted acceleration data to.
-    fd = checkError(open("data.dat", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR), "Open for Write");
+    fd = checkError(open("data.dat", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR), "Failed to open write file");
 
     //keep reading the file until there is no more data left
     while ((bytes = read(rd, valz, PACKET_SIZE)) > 0) {
