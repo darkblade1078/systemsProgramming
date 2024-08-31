@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 
     int fd; //write file
     int rd; //read file
-    ssize_t bytes; //bytes whether we get a -1, 0, or file descriptor
+    int bytes; //bytes whether we get a -1, 0, or file descriptor
     uint8_t valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
     uint16_t rawData; //where we store our raw data after shifting bits
     double convertedData; //where we store our converted data after using the proper conversion function
