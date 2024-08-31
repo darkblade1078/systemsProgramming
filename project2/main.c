@@ -18,12 +18,12 @@ int checkError(int val, const char* msg) {
     return val;
 }
 
-//data | L) / 32768.0 * 16.0
+//data / 32768.0 * 16.0
 double convertRawAccelerationData(int16_t value) {
     return value / 32768.0 * 16.0;
 }
 
-//data | L) / 32768.0 * 2000.0
+//data / 32768.0 * 2000.0
 double convertRawAngularData(int16_t value) {
     return value / 32768.0 * 2000.0;
 }
@@ -37,9 +37,9 @@ int main(int argc, char* argv[]) {
 
     int fd; //write file
     int rd; //read file
-    int bytes; //bytes whether we get a -1, 0, or file descriptor
+    int bytes; //bytes whether we get a -1, 0, or a file descriptor
     uint8_t valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
-    uint16_t rawData; //where we store our raw data after shifting bits
+    int16_t  rawData; //where we store our raw data after shifting bits
     double convertedData; //where we store our converted data after using the proper conversion function
 
     //the file where we're reading the raw acceleration data from
