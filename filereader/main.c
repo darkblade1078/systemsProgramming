@@ -20,11 +20,10 @@ int main(int argc, char* argv[]) {
     float val; //where all 20 bytes are stored for each iteration of our while loop
 
     //the file where we're reading the raw acceleration data from
-    rd = checkError(open("data.dat", O_RDONLY), "Failed to open read file");
+    rd = checkError(open("data.dat", O_RDONLY, S_IRUSR), "Failed to open read file");
 
     //keep reading the file until there is no more data left
     while ((bytes = read(rd, &val, sizeof(float))) > 0) {
-
 
         printf("value: %f\n", val);
     }

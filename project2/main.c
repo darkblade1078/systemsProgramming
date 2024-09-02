@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 
 #define PACKET_SIZE 20  //each packet is 20 bytes
-#define HEADER_SIZE 2   //first 2 bytes are header and are not needed
+#define HEADER_SIZE 2   //first 2 bytes are the header and flag and are not needed
 
 //basic error handler for reading/writing failures
 int checkError(int val, const char* msg) {
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     float convertedData; //where we store our converted data after using the proper conversion function
 
     //the file where we're reading the raw acceleration data from
-    rd = checkError(open("raw.dat", O_RDONLY), "Failed to open read file");
+    rd = checkError(open("raw.dat", O_RDONLY, S_IRUSR), "Failed to open read file");
 
     //the file we are sending the converted acceleration data to.
     fd = checkError(open("data.dat", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR), "Failed to open write file");
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     while ((bytes = read(rd, valz, PACKET_SIZE)) > 0) {
 
         /*
-            since our first 2 bytes are header bytes,
+            since our first 2 bytes are the header and flag bytes,
             we don't need them and can skip them all together
             hence why we are starting at index 2
         */
