@@ -61,8 +61,6 @@ int main(int argc, char* argv[]) {
             //(H | (L << 8))
             rawData = (valz[i] | (valz[i + 1] << 8));
 
-            printf("%f\n", rawData);
-
             /*
                 use a switch case to know which data is being read
                 so we can use the proper functions to convert the data
