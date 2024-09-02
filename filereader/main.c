@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 //basic error handler for reading/writing failures
 int checkError(int val, const char* msg) {
