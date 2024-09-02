@@ -19,17 +19,17 @@ int checkError(int val, const char* msg) {
 }
 
 //data / 32768.0 * 16.0
-double convertRawAccelerationData(int16_t value) {
+float convertRawAccelerationData(char value) {
     return value / 32768.0 * 16.0;
 }
 
 //data / 32768.0 * 2000.0
-double convertRawAngularData(int16_t value) {
+float convertRawAngularData(char value) {
     return value / 32768.0 * 2000.0;
 }
 
 //data / 32768.0 * 180.0
-double convertRawAngleData(int16_t value) {
+float convertRawAngleData(char value) {
     return value / 32768.0 * 180.0;
 }
 
@@ -38,9 +38,9 @@ int main(int argc, char* argv[]) {
     int fd; //write file
     int rd; //read file
     int bytes; //bytes whether we get a -1, 0, or a file descriptor
-    uint8_t valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
-    int16_t rawData; //where we store our raw data after shifting bits
-    double convertedData; //where we store our converted data after using the proper conversion function
+    char valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
+    char rawData; //where we store our raw data after shifting bits
+    float convertedData; //where we store our converted data after using the proper conversion function
 
     //the file where we're reading the raw acceleration data from
     rd = checkError(open("raw.dat", O_RDONLY), "Failed to open read file");
@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
         */
         for(int i = HEADER_SIZE; i < PACKET_SIZE; i += 2) {
 
-            //((H << 8) | L)
-            rawData = ((valz[i + 1] << 8) | valz[i]);
+            //(H | (L << 8))
+            rawData = (valz[i] | (valz[i + 1] << 8));
 
             /*
                 use a switch case to know which data is being read
@@ -71,60 +71,60 @@ int main(int argc, char* argv[]) {
                 //Ax
                 case 2:
                    convertedData = convertRawAccelerationData(rawData);
-                   printf("%s: %lf\n", "Ax", convertedData);
+                   printf("%s: %f\n", "Ax", convertedData);
                     break;
 
                 //Ay
                 case 4:
                    convertedData = convertRawAccelerationData(rawData);
-                   printf("%s: %lf\n", "Ay", convertedData);
+                   printf("%s: %f\n", "Ay", convertedData);
                     break;
 
                 //Az
                 case 6:
                    convertedData = convertRawAccelerationData(rawData);
-                   printf("%s: %lf\n", "Az", convertedData);
+                   printf("%s: %f\n", "Az", convertedData);
                     break;
                 
                 //Wx
                 case 8:
                    convertedData = convertRawAngularData(rawData);
-                   printf("%s: %lf\n", "Wx", convertedData);
+                   printf("%s: %f\n", "Wx", convertedData);
                     break;
 
                 //Wy
                 case 10:
                    convertedData = convertRawAngularData(rawData);
-                   printf("%s: %lf\n", "Wy", convertedData);
+                   printf("%s: %f\n", "Wy", convertedData);
                     break;
 
                 //Wz
                 case 12:
                    convertedData = convertRawAngularData(rawData);
-                   printf("%s: %lf\n", "Wz", convertedData);
+                   printf("%s: %f\n", "Wz", convertedData);
                     break;
 
                 //Roll
                 case 14:
                    convertedData = convertRawAngleData(rawData);
-                   printf("%s: %lf\n", "Roll", convertedData);
+                   printf("%s: %f\n", "Roll", convertedData);
                     break;
 
                 //Pitch
                 case 16:
                    convertedData = convertRawAngleData(rawData);
-                   printf("%s: %lf\n", "Pitch", convertedData);
+                   printf("%s: %f\n", "Pitch", convertedData);
                     break;
 
                 //Yaw
                 case 18:
                    convertedData = convertRawAngleData(rawData);
-                   printf("%s: %lf\n\n", "Yaw", convertedData);
+                   printf("%s: %f\n\n", "Yaw", convertedData);
                     break;
             }
 
             //write the converted data to our data.dat file
-            bytes = checkError(write(fd, &convertedData, sizeof(double)), "Failed to write to file");
+            bytes = checkError(bytes = write(fd, &convertedData, sizeof(convertedData)), "Failed to write to file");
         }
     }
 
