@@ -19,17 +19,17 @@ int checkError(int val, const char* msg) {
 }
 
 //data / 32768.0 * 16.0
-float convertRawAccelerationData(char value) {
+float convertRawAccelerationData(float value) {
     return value / 32768.0 * 16.0;
 }
 
 //data / 32768.0 * 2000.0
-float convertRawAngularData(char value) {
+float convertRawAngularData(float value) {
     return value / 32768.0 * 2000.0;
 }
 
 //data / 32768.0 * 180.0
-float convertRawAngleData(char value) {
+float convertRawAngleData(float value) {
     return value / 32768.0 * 180.0;
 }
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     int rd; //read file
     int bytes; //bytes whether we get a -1, 0, or a file descriptor
     char valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
-    char rawData; //where we store our raw data after shifting bits
+    float rawData; //where we store our raw data after shifting bits
     float convertedData; //where we store our converted data after using the proper conversion function
 
     //the file where we're reading the raw acceleration data from
@@ -60,6 +60,8 @@ int main(int argc, char* argv[]) {
 
             //(H | (L << 8))
             rawData = (valz[i] | (valz[i + 1] << 8));
+
+            printf("%f\n", rawData);
 
             /*
                 use a switch case to know which data is being read
