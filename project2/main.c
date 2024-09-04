@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     int fd; //write file
     int rd; //read file
     int bytes; //bytes whether we get a -1, 0, or a file descriptor
-    char valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
+    unsigned char valz[PACKET_SIZE]; //where all 20 bytes are stored for each iteration of our while loop
     float rawData; //where we store our raw data after shifting bits
     float convertedData; //where we store our converted data after using the proper conversion function
 
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
         for(int i = HEADER_SIZE; i < PACKET_SIZE; i += 2) {
 
             //(H | (L << 8))
-            rawData = (valz[i] | (valz[i + 1] << 8));
+            rawData = ((short)(valz[i + 1] << 8) | valz[i]);
 
             /*
                 use a switch case to know which data is being read
