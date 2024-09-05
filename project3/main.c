@@ -41,7 +41,7 @@ int main() {
     rotaDat = checkError(open("values/rota.dat", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR), "Failed to open rota.dat");
 
     //keep reading the file until there is no more data left
-    while ((bytes = read(rd, valz, sizeof(float) * 9)) > 0) {
+    while ((bytes = read(rd, valz, sizeof(float) * PACKET_SIZE)) > 0) {
 
         for(int i = 0; i < PACKET_SIZE; i++) {
 
