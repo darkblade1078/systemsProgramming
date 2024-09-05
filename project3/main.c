@@ -16,6 +16,13 @@ int checkError(int val, const char* msg) {
     return val;
 }
 
+int checkFileExistance(int val, const char* filename) {
+    if(val == -1) {
+        printf("%s already exists\n", filename);
+    }
+    return val;
+}
+
 int main() {
 
     int rd; //read file
@@ -26,7 +33,7 @@ int main() {
     float valz[PACKET_SIZE]; //where we store the data as we iterate through our loop
     float val; //the data we will use to write into it's proper file
 
-    bytes = checkError(mkdir("values"), "Failed to create values directory");
+    bytes = checkFileExistance(mkdir("values"), "values");
 
     //data.dat
     rd = checkError(open("data.dat", O_RDONLY, S_IRUSR), "Failed to open data.dat");
@@ -106,7 +113,7 @@ int main() {
                 //Yaw
                 case 8:
                    val = valz[i];
-                   printf("%s: %f\n", "Yaw", val);
+                   printf("%s: %f\n\n", "Yaw", val);
                    bytes = checkError(bytes = write(anglDat, &val, sizeof(val)), "Failed to write to angl.dat");
                     break;
             }
