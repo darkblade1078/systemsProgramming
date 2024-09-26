@@ -8,8 +8,6 @@
 #include <fcntl.h>
 #include <time.h>
 
-int breakPause = 0;
-
 int checkError(int val, const char* msg) {
 
     if(val == -1) {
@@ -22,7 +20,7 @@ int checkError(int val, const char* msg) {
 
 void signalHandler(int sig) {
 
-    char* msg = "Exit (y/N)";
+    char* msg = "\nExit (y/N)";
     char yorn[5];
     int rdNum;
 
@@ -31,10 +29,6 @@ void signalHandler(int sig) {
         rdNum = read(STDIN_FILENO, yorn, 5);
 
         if(rdNum == 2 && (yorn[0] == 'Y' || yorn[0] == 'y')) exit(EXIT_SUCCESS);
-    }
-
-    if(sig == SIGALRM) {
-        breakPause = 1;
     }
 }
 
@@ -45,13 +39,16 @@ int main () {
     int i = 0;
     double valz[3];
 
+    signal(SIGINT, &signalHandler);
+
     struct timespec time;
     time.tv_sec = 1;
     time.tv_nsec = 0;
     
-    
     int outside_range = 0;
     int inside_range = 0;
+
+    
 
     rd = checkError(open("values/angl.dat", O_RDONLY), "Failed to open angl.dat");
 
@@ -61,7 +58,7 @@ int main () {
 
         printf("Roll: %lf\n", valz[0]);
 
-        if ((valz[0] >= -20) & (valz[0] <= 20)) {
+        if ((valz[0] >= -20) && (valz[0] <= 20)) {
             printf("Inside the range\n\n");
             inside_range++;
         }
@@ -72,7 +69,7 @@ int main () {
 
         printf("Pitch: %lf\n", valz[1]);
 
-        if ((valz[1] >= -20) & (valz[1] <= 20)) {
+        if ((valz[1] >= -20) && (valz[1] <= 20)) {
             printf("Inside the range\n\n");
             inside_range++;
         }
@@ -83,7 +80,7 @@ int main () {
 
         printf("Yaw: %lf\n", valz[2]);
 
-        if ((valz[2] >= -20) & (valz[2] <= 20)) {
+        if ((valz[2] >= -20) && (valz[2] <= 20)) {
             printf("Inside the range\n\n");
             inside_range++;
         }
