@@ -62,7 +62,6 @@ char** getDataFromFile(char* filePath) {
     char buffer[BUFFER_SIZE]; // our buffer for storing data from the quest.txt file
 
     /*
-
         https://stackoverflow.com/questions/14808908/pointer-to-2d-arrays-in-c
 
         So I wanted to make a function to handle getting the data and storing them in an array.
