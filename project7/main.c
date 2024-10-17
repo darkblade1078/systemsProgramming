@@ -10,6 +10,8 @@
 #define MAX_NUMBER 101 //Max number number RNG will create
 
 //Globals
+int player1Ready;
+int player2Ready;
 int player1Guess;
 int player2Guess;
 int target;
@@ -18,6 +20,7 @@ int player2Wins = 0;
 pid_t player1;
 pid_t player2;
 int sigReceived = 0;
+int resetGame = 0;
 
 //Check error function
 int checkError(int val, const char* msg) {
@@ -30,32 +33,69 @@ int checkError(int val, const char* msg) {
     return val;
 }
 
-//handle signal from SIGTERM
-void sigtermHandler(int sig) {
-    printf("Killing process %d\n", getpid());
-    exit(0);
+void parentSignalHandler(int sig) {
+
+    if(sig == SIGUSR1)
+        player1Ready = 1; 
+
+    if(sig == SIGUSR2)
+        player2Ready = 1; 
+
+    if(sig == SIGINT) {
+        kill(player1, SIGTERM);
+        kill(player2, SIGTERM);
+    }
+
+    if(sig == SIGCHLD)
+        wait(NULL);
 }
 
-//handle signal from SIGUSR1
-void sigusr1Handler(int sig) {
-    sigReceived = SIGUSR1;
+void setupParentSigactions() {
+    struct sigaction sa;
+
+    sa.sa_handler = parentSignalHandler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL);
+
+    sa.sa_handler = parentSignalHandler;
+    sigaction(SIGUSR2, &sa, NULL);
+
+    sa.sa_handler = parentSignalHandler;
+    sigaction(SIGCHLD, &sa, NULL);
 }
 
-//handle signal from SIGUSR2
-void sigusr2Handler(int sig) {
-    sigReceived = SIGUSR2;
+void childSignalHandler(int sig) {
+
+    if(sig == SIGUSR1)
+        sigReceived = SIGUSR1;
+
+    if(sig == SIGUSR2)
+        sigReceived = SIGUSR2;
+
+    if(sig == SIGINT)
+        resetGame = 1;
+
+    if(sig == SIGTERM)
+        exit(0);
 }
 
-//handle signal from SIGCHLD
-void sigchldHandler(int sig) {
-    wait(NULL);
-}
+void setupChildSigactions() {
+    struct sigaction sa;
 
-//handle signal from SIGINT
-void sigintHandler(int sig) {
-    kill(player1, SIGTERM);
-    kill(player2, SIGTERM);
-    exit(0);
+    sa.sa_handler = childSignalHandler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL);
+
+    sa.sa_handler = childSignalHandler;
+    sigaction(SIGUSR2, &sa, NULL);
+
+    sa.sa_handler = childSignalHandler;
+    sigaction(SIGINT, &sa, NULL);
+
+    sa.sa_handler = childSignalHandler;
+    sigaction(SIGTERM, &sa, NULL);
 }
 
 int readAnswerFromFile(int child) {
@@ -93,84 +133,130 @@ void writeAnswerToFile(int child, int value) {
 }
 
 void player1Logic() {
-    srand(time(NULL) ^ (getpid()<<16));
+    srand(time(NULL));
+    setupChildSigactions();
 
-    int min = 0;
-    int max = MAX_NUMBER;
+    pause();
 
     while (1) {
-        pause();
 
-        int guess = (min + max) / 2;
-
-        writeAnswerToFile(1, guess);
+        int min = 0;
+        int max = MAX_NUMBER;
 
         kill(getppid(), SIGUSR1);
-        pause();
 
-        if (sigReceived == SIGUSR1)
-            min = guess; //Low
+        while (1) {
+            sigReceived = 0;
+            resetGame = 0;
 
-        else if (sigReceived == SIGUSR2)
-            max = guess; //High
+            int guess = (min + max) / 2;
 
-        else if (sigReceived == SIGINT)
-            break; //Correct
+            writeAnswerToFile(1, guess);
+            sleep(1);
+
+            kill(getppid(), SIGUSR1);
+            
+            pause();
+
+            if (sigReceived == SIGUSR1)
+                min = guess; //Low
+
+            else if (sigReceived == SIGUSR2)
+                max = guess; //High
+
+            else if (sigReceived == SIGINT)
+                break; //Correct
+        }
     }
 
     exit(0);
 }
 
 void player2Logic() {
-    srand(time(NULL) ^ (getpid()<<16));
+    srand(time(NULL));
+    setupChildSigactions();
 
-    int min = 0;
-    int max = MAX_NUMBER;
+    pause();
 
     while (1) {
-        pause();
 
-        int guess = rand() % (max - min) + min;
-
-        writeAnswerToFile(2, guess);
+        int min = 0;
+        int max = MAX_NUMBER;
 
         kill(getppid(), SIGUSR2);
-        pause();
 
-        if (sigReceived == SIGUSR1)
-            min = guess; //Low
+        while (1) {
+            sigReceived = 0;
+            resetGame = 0;
 
-        else if (sigReceived == SIGUSR2)
-            max = guess; //High
+            int guess = rand() % (max - min) + min;
 
-        else if (sigReceived == SIGINT)
-            break; //Correct
+            writeAnswerToFile(2, guess);
+            sleep(1);
+
+            kill(getppid(), SIGUSR2);
+            
+            pause();
+
+            if (sigReceived == SIGUSR1)
+                min = guess; //Low
+
+            else if (sigReceived == SIGUSR2)
+                max = guess; //High
+
+            else if (sigReceived == SIGINT)
+                break; //Correct
+        }
     }
+
+    exit(0);
 }
 
 void ref() {
     int game;
 
-    printf("Preparing the game...\n");
+    struct sigaction sa;
 
+    sa.sa_handler = parentSignalHandler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGINT, &sa, NULL);
+
+    printf("Preparing the game...\n");
     sleep(5);
 
+    kill(player1, SIGUSR1);
+    kill(player2, SIGUSR2);
+
     for(game = 0; game < MAX_ROUNDS; game++) {
+
         printf("Starting game %d\n", game + 1);
 
-        target = rand() % MAX_NUMBER;
+        while (!player1Ready || !player2Ready) {
+            pause();
+        }
 
-        kill(player1, SIGUSR1);
-        kill(player2, SIGUSR1);
+        player1Ready = 0;
+        player2Ready = 0;
+
+        printf("Both players are ready for game %d\n", game + 1);
+
+        printf("Player 1 wins = %d, Player 2 wins = %d\n\n", player1Wins, player2Wins);
+
+        target = rand() % MAX_NUMBER;
+        printf("Target number is: %d\n", target);
 
         while (1) {
-            pause();
+
+            while (!player1Ready || !player2Ready) {
+                pause();
+            }
 
             int guess1 = readAnswerFromFile(1);
             int guess2 = readAnswerFromFile(2);
 
             printf("Player 1 guessed: %d\n", guess1);
-            printf("Player 2 guessed: %d\n", guess2);
+            printf("Player 2 guessed: %d\n\n", guess2);
 
             if(guess1 == target) {
                 player1Wins++;
@@ -192,23 +278,18 @@ void ref() {
                 kill(player2, SIGUSR1);
             else
                 kill(player2, SIGUSR2);
+
+            sleep(2);
         }
 
-        sleep(2);
+        kill(player1, SIGINT);
+        kill(player2, SIGINT);
     }
 
     printf("Final results: Player 1 wins = %d, Player 2 wins = %d\n", player1Wins, player2Wins);
 }
 
 int main() {
-    srand(time(NULL)); //Set SEED to NULL
-
-    signal(SIGUSR1, sigusr1Handler);
-    signal(SIGUSR2, sigusr2Handler);
-    signal(SIGCHLD, sigchldHandler);
-    signal(SIGINT, sigintHandler);
-    signal(SIGTERM, sigtermHandler);
-
     player1 = fork();
 
     checkError(player1, "Player 1 failed to run");
@@ -223,5 +304,15 @@ int main() {
     if(player2 == 0)
         player2Logic();
 
+    setupParentSigactions();
     ref();
 }
+
+/*
+I hate this project.
+
+I have it all coded, but I've spent 6 hours trying to fix all these signal bugs.
+This project has destroyed my soul.
+
+Whatever grade I get, I don't care. Because I hate this project.
+*/
