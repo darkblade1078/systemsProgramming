@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <time.h>
 
 int checkError(int val, const char* msg) {
 
@@ -28,7 +29,7 @@ int main() {
     //Use string interpolation to add our number from X into the filename
     sprintf(filename, "data%d.dat", X);
 
-    fd = checkError(open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR), "Failed to open dataX.dat");
+    fd = checkError(open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), "Failed to open dataX.dat");
 
     for(int i = 0; i < 60; i++) {
         value = rand() % 101;
