@@ -17,7 +17,7 @@ int checkError(int val, const char* msg) {
 }
 
 void sigChldHandler(int sig) {
-    print("Recieved a signal from SIGCHLD\n");
+    printf("Recieved a signal from SIGCHLD\n");
 }
 
 int main() {
@@ -25,7 +25,6 @@ int main() {
     int status;
     int rd;
     int bytes;
-    int value;
 
     //To prevent SIGCHLD from killing the program (And to see the signal get recieved)
     signal(SIGCHLD, sigChldHandler);
@@ -36,7 +35,7 @@ int main() {
 
     //Run exec
     if(pid == 0) {
-        checkError(execve("./myRand", NULL), "Failed to run exec on myRand");
+        checkError(execlp("./myRand", "myRand", NULL), "Failed to run exec on myRand");
     }
     else {
 
@@ -56,13 +55,13 @@ int main() {
             char filename[20];
             sprintf(filename, "data%d.dat", X);
 
-            rd = checkError(open("dataX.dat", O_RDONLY, S_IRUSR), "Failed to open dataX.dat");
+            rd = checkError(open(filename, O_RDONLY, S_IRUSR), "Failed to open dataX.dat");
 
             checkError(bytes = read(rd, values, sizeof(int) * 60), "Failed to read dataX.dat");
 
             for(int i = 0; i < 60; i++) {
-                printf("Number from file: %d\n", value[i]);
-                sum += value[i];
+                printf("Number from file: %d\n", values[i]);
+                sum += values[i];
                 printf("Sum: %d\n", sum);
             }
 
